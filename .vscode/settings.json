@@ -1,0 +1,26 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+  "[markdown]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.markdownlint": "explicit"
+    }
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "cSpell.words": [
+    "aiqfome",
+    "fakestoreapi",
+    "Fjallraven",
+    "Foldsack",
+    "knexfile",
+    "magalu",
+    "pgdata",
+    "ravi",
+    "XVCJ"
+  ],
+  "thunder-client.customLocation": "../docs/openapi.yaml"
+}

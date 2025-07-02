@@ -1,0 +1,299 @@
+openapi: 3.0.3
+info:
+  title: Favorite Products API - aiqfome Challenge
+  description: A RESTful API to manage clients and their favorite products list.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3333
+    description: Local development server
+
+tags:
+  - name: Auth
+    description: Authentication operations
+  - name: Clients
+    description: Operations about clients
+  - name: Favorites
+    description: Client's favorite products operations
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Authenticate a client
+      description: Authenticates a client using their email and returns a JWT token upon success.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /clients:
+    post:
+      tags:
+        - Clients
+      summary: Create a new client
+      description: Registers a new client in the system. The email must be unique.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientInput"
+      responses:
+        "201":
+          description: Client created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+        "400":
+          description: Invalid input data or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /clients/{id}:
+    get:
+      tags:
+        - Clients
+      summary: Get a client by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The client's unique identifier.
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+        "404":
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - Clients
+      summary: Update a client
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The client's unique identifier.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientInput"
+      responses:
+        "200":
+          description: Client updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+        "400":
+          description: Invalid input data or email already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - Clients
+      summary: Delete a client
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The client's unique identifier.
+      responses:
+        "204":
+          description: Client deleted successfully
+        "404":
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /favorites:
+    get:
+      tags:
+        - Favorites
+      summary: List client's favorite products
+      description: Retrieves a list of full product details for the authenticated client's favorites.
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: A list of favorite products.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+        "401":
+          description: Unauthorized
+    post:
+      tags:
+        - Favorites
+      summary: Add a product to favorites
+      description: Adds a new product to the authenticated client's favorites list.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddFavoriteRequest"
+      responses:
+        "204":
+          description: Product added to favorites successfully.
+        "400":
+          description: Product not found or already in favorites.
+        "401":
+          description: Unauthorized
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Client:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ClientInput:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+      required:
+        - name
+        - email
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops"
+        price:
+          type: number
+          format: float
+          example: 109.95
+        description:
+          type: string
+        category:
+          type: string
+        image:
+          type: string
+          format: uri
+        rating:
+          type: object
+          properties:
+            rate:
+              type: number
+              format: float
+            count:
+              type: integer
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+      required:
+        - email
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    AddFavoriteRequest:
+      type: object
+      properties:
+        productId:
+          type: string
+          example: "1"
+      required:
+        - productId
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Client not found."
